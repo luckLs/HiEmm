@@ -8,10 +8,10 @@
     <name>newV</name>
     <description>newV</description>
     <properties>
-        <java.version>20</java.version>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot.version>2.6.13</spring-boot.version>
+        <spring-boot.version>3.1.4</spring-boot.version>
     </properties>
     <dependencies>
         <dependency>
