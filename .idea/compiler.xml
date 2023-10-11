@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/lhc-framework/common-spring-boot-starter/src/main/resources/archetype-resources" includeSubdirectories="true" />
+    </excludeFromCompile>
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="common-spring-boot-starter" />
+        <module name="lhc-system" />
+        <module name="web-spring-boot-starter" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>

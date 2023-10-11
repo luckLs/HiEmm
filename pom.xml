@@ -4,20 +4,43 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
     <artifactId>newV</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${revision}</version>
     <name>newV</name>
-    <description>newV</description>
+    <description>项目</description>
+
+    <modules>
+        <module>lhc-system</module>
+        <module>lhc-framework</module>
+    </modules>
+    <packaging>pom</packaging>
+
+
     <properties>
+        <revision>1.0.0</revision>
         <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>3.1.4</spring-boot.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-dependencies</artifactId>
+            <version>${spring-boot.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
         </dependency>
+
+        <!-- 自定义组件S -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>web-spring-boot-starter</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- 自定义组件E -->
 
         <dependency>
             <groupId>com.baomidou</groupId>
@@ -57,11 +80,7 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>5.8.16</version>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <version>5.8.22</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -84,6 +103,7 @@
             <version>1.9.19</version>
         </dependency>
     </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
