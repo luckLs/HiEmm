@@ -1,4 +1,4 @@
-package com.lhc.newV.framework.web.handler;
+package com.lhc.newV.framework.web.result;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +13,10 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
+
+/**
+ * @author liaohaicheng
+ */
 @RestControllerAdvice
 public class ResponseAdvice implements ResponseBodyAdvice<Object> {
     @Autowired

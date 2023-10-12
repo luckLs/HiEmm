@@ -6,7 +6,8 @@ import lombok.Data;
 
 /**
  * 表的抽象实体类
- **/
+ * @author liaohaicheng
+ * */
 @Data
 public class Table {
     @TableId(type = IdType.AUTO)

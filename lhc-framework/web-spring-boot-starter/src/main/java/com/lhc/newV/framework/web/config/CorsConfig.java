@@ -1,4 +1,4 @@
-package com.lhc.newV.system.config;
+package com.lhc.newV.framework.web.config;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

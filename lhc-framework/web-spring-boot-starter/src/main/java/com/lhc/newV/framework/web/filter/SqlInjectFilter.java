@@ -1,4 +1,4 @@
-package com.lhc.newV.system.config;
+package com.lhc.newV.framework.web.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -7,7 +7,6 @@ import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,19 +26,18 @@ public class SqlInjectFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) servletRequest;
-        Map parametersMap = servletRequest.getParameterMap();
-        Iterator it = parametersMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String[] value = (String[]) entry.getValue();
-            for (int i = 0; i < value.length; i++) {
-                if(null != value[i] && this.regx != null){
-                    Pattern p = Pattern.compile(this.regx); Matcher m = p.matcher(value[i]);
+        Map<String, String[]> parametersMap = servletRequest.getParameterMap();
+        for (Map.Entry<String, String[]> stringEntry : parametersMap.entrySet()) {
+            String[] value = (String[]) ((Map.Entry<?, ?>) stringEntry).getValue();
+            for (String s : value) {
+                if (null != s && this.regx != null) {
+                    Pattern p = Pattern.compile(this.regx);
+                    Matcher m = p.matcher(s);
                     if (m.find()) {
                         log.error("您输入的参数有非法字符，请输入正确的参数！");
                         servletRequest.setAttribute("err", "您输入的参数有非法字符，请输入正确的参数！");
-                        servletRequest.setAttribute("pageUrl",req.getRequestURI());
-                        servletRequest.getRequestDispatcher( "/error").forward(servletRequest, servletResponse);
+                        servletRequest.setAttribute("pageUrl", req.getRequestURI());
+                        servletRequest.getRequestDispatcher("/error").forward(servletRequest, servletResponse);
                         return;
                     }
                 }

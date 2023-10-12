@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.newv.web;
+package import com.lhc.newV.web;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;

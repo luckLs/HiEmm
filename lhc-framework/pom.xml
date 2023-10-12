@@ -16,6 +16,7 @@
     <modules>
         <module>web-spring-boot-starter</module>
         <module>common-spring-boot-starter</module>
+        <module>db-spring-boot-starter</module>
     </modules>
 
 </project>

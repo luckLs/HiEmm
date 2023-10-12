@@ -1,4 +1,4 @@
-//package com.example.newv.config;
+//package import com.lhc.newV.config;
 //
 //import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 //import org.springframework.beans.factory.annotation.Autowired;

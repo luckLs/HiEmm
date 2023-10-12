@@ -1,8 +1,10 @@
 package com.lhc.newV.system.controller;
 
-import com.example.newv.entity.vo.ErTableVO;
-import com.example.newv.entity.vo.TableColumnVO;
-import com.example.newv.service.TableService;
+
+import com.lhc.newV.system.entity.vo.ErTableVO;
+import com.lhc.newV.system.entity.vo.TableColumnVO;
+import com.lhc.newV.system.service.TableService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,10 +18,10 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/table")
+@RequiredArgsConstructor
 public class TableConll {
 
-    @Autowired
-    TableService tableService;
+    private final TableService tableService;
 
 
     @GetMapping

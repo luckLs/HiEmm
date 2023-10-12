@@ -2,6 +2,10 @@ package com.lhc.newV.framework.common.result;
 
 import lombok.Data;
 
+
+/**
+ * @author liaohaicheng
+ */
 @Data
 public class ResultData<T> {
     private int code;
@@ -10,8 +14,8 @@ public class ResultData<T> {
 
     public static <T> ResultData<T> success(T data) {
         ResultData<T> resultData = new ResultData<>();
-        resultData.setCode(ReturnCode.RC100.getCode());
-        resultData.setMes(ReturnCode.RC100.getMessage());
+        resultData.setCode(ResultCode.RC100.getCode());
+        resultData.setMes(ResultCode.RC100.getMessage());
         resultData.setData(data);
         return resultData;
     }

@@ -5,33 +5,31 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
-import com.example.newv.comm.utli.DataBase.DatabaseUtil;
-import com.example.newv.comm.utli.DataBase.MyColumn;
-import com.example.newv.comm.utli.DataBase.MyTable;
-import com.example.newv.comm.utli.MD5Utli;
-import com.example.newv.entity.Column;
-import com.example.newv.entity.DataBaseInfo;
-import com.example.newv.entity.Table;
-import com.example.newv.entity.vo.ErRelation;
-import com.example.newv.entity.vo.ErRelationVO;
-import com.example.newv.entity.vo.ErTableVO;
-import com.example.newv.entity.vo.TableColumnVO;
-import com.example.newv.mapper.ColumnMapper;
-import com.example.newv.mapper.DataBaseInfoMapper;
-import com.example.newv.mapper.ForeignKeyMapper;
-import com.example.newv.mapper.TableMapper;
+import com.lhc.newV.system.entity.Column;
+import com.lhc.newV.system.entity.DataBaseInfo;
+import com.lhc.newV.system.entity.Table;
+import com.lhc.newV.system.entity.vo.ErRelation;
+import com.lhc.newV.system.entity.vo.ErRelationVO;
+import com.lhc.newV.system.entity.vo.ErTableVO;
+import com.lhc.newV.system.entity.vo.TableColumnVO;
+import com.lhc.newV.system.mapper.ColumnMapper;
+import com.lhc.newV.system.mapper.DataBaseInfoMapper;
+import com.lhc.newV.system.mapper.ForeignKeyMapper;
+import com.lhc.newV.system.mapper.TableMapper;
 import com.lhc.newV.system.service.TableService;
+import jakarta.annotation.Resource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements TableService {
 
     @Autowired
@@ -83,61 +81,61 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void openSyncDataBaseInfo(Integer databaseInfoId) {
-        // 获取数据库信息
-        DataBaseInfo dataBaseInfo = dataBaseInfoMapper.selectById(databaseInfoId);
-        // 获取数据库表信息
-        List<MyTable> myTableList = DatabaseUtil.info(dataBaseInfo.getJdbcUrl(), dataBaseInfo.getUserName(), dataBaseInfo.getPassword());
-        // 处理表和字段信息
-        List<Column> columnList = new ArrayList<>();
-        List<Table> tableList = new ArrayList<>();
-        List<String> primaryKeyList = new ArrayList<>();
-        // 主键tablePrimaryKeyMap--> K-表名:v主键
-        Map<String, Object[]> tablePrimaryKeyMap = new HashMap<>();
-
-        for (MyTable myTable : myTableList) {
-            // 保存表信息
-            Table table = new Table();
-            table.setName(myTable.name);
-            table.setDescription(myTable.description);
-            table.setDatabaseInfoId(dataBaseInfo.getId());
-            table.setAlias(MD5Utli.get_7(myTable.name));
-
-            // 现在有几张表如下
-            //StringBuilder aiCorpus = new StringBuilder();
-            //aiCorpus.append(".表：").append(table.getName());
-            //aiCorpus.append("字段有：");
-            this.save(table);
-            // 遍历表中的字段信息
-            for (MyColumn myColumn : myTable.columnList) {
-                // 保存字段信息
-                Column column = new Column();
-                column.setDatabaseInfoId(dataBaseInfo.getId());
-                column.setTableId(table.getId());
-                column.setName(myColumn.field);
-                column.setDataType(myColumn.type);
-                column.setIsPrimaryKey(myColumn.isKey);
-                column.setDescription(myColumn.comment);
-                column.setAlias(MD5Utli.get_7(myColumn.field));
-                //aiCorpus.append("[" + column.getAlias() + "]");
-                Db.save(column);
-                columnList.add(column);
-                // 处理主键
-                if (myColumn.isKey) {
-                    primaryKeyList.add(myColumn.field);
-                    tablePrimaryKeyMap.put(table.getName(), new Object[]{table.getId(), column.getId()});
-                }
-            }
-        }
-        columnList.forEach(column -> {
-            if (column.getName().endsWith("_id")) {
-                String foreignKeyTable = column.getName().substring(0, column.getName().length() - 3);
-                if (null != tablePrimaryKeyMap.get(foreignKeyTable)) {
-                        column.setForeignTableId((int) tablePrimaryKeyMap.get(foreignKeyTable)[0]);
-                    column.setForeignKeyId((int) tablePrimaryKeyMap.get(foreignKeyTable)[1]);
-                }
-            }
-        });
-        Db.updateBatchById(columnList);
+//        // 获取数据库信息
+//        DataBaseInfo dataBaseInfo = dataBaseInfoMapper.selectById(databaseInfoId);
+//        // 获取数据库表信息
+//        List<MyTable> myTableList = DatabaseUtil.info(dataBaseInfo.getJdbcUrl(), dataBaseInfo.getUserName(), dataBaseInfo.getPassword());
+//        // 处理表和字段信息
+//        List<Column> columnList = new ArrayList<>();
+//        List<Table> tableList = new ArrayList<>();
+//        List<String> primaryKeyList = new ArrayList<>();
+//        // 主键tablePrimaryKeyMap--> K-表名:v主键
+//        Map<String, Object[]> tablePrimaryKeyMap = new HashMap<>();
+//
+//        for (MyTable myTable : myTableList) {
+//            // 保存表信息
+//            Table table = new Table();
+//            table.setName(myTable.name);
+//            table.setDescription(myTable.description);
+//            table.setDatabaseInfoId(dataBaseInfo.getId());
+//            table.setAlias(MD5Utli.get_7(myTable.name));
+//
+//            // 现在有几张表如下
+//            //StringBuilder aiCorpus = new StringBuilder();
+//            //aiCorpus.append(".表：").append(table.getName());
+//            //aiCorpus.append("字段有：");
+//            this.save(table);
+//            // 遍历表中的字段信息
+//            for (MyColumn myColumn : myTable.columnList) {
+//                // 保存字段信息
+//                Column column = new Column();
+//                column.setDatabaseInfoId(dataBaseInfo.getId());
+//                column.setTableId(table.getId());
+//                column.setName(myColumn.field);
+//                column.setDataType(myColumn.type);
+//                column.setIsPrimaryKey(myColumn.isKey);
+//                column.setDescription(myColumn.comment);
+//                column.setAlias(MD5Utli.get_7(myColumn.field));
+//                //aiCorpus.append("[" + column.getAlias() + "]");
+//                Db.save(column);
+//                columnList.add(column);
+//                // 处理主键
+//                if (myColumn.isKey) {
+//                    primaryKeyList.add(myColumn.field);
+//                    tablePrimaryKeyMap.put(table.getName(), new Object[]{table.getId(), column.getId()});
+//                }
+//            }
+//        }
+//        columnList.forEach(column -> {
+//            if (column.getName().endsWith("_id")) {
+//                String foreignKeyTable = column.getName().substring(0, column.getName().length() - 3);
+//                if (null != tablePrimaryKeyMap.get(foreignKeyTable)) {
+//                        column.setForeignTableId((int) tablePrimaryKeyMap.get(foreignKeyTable)[0]);
+//                    column.setForeignKeyId((int) tablePrimaryKeyMap.get(foreignKeyTable)[1]);
+//                }
+//            }
+//        });
+//        Db.updateBatchById(columnList);
     }
 
     public void a() {

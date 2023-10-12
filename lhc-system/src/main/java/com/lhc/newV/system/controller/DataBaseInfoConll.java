@@ -1,12 +1,15 @@
 package com.lhc.newV.system.controller;
 
-import com.example.newv.entity.DataBaseInfo;
-import com.example.newv.mapper.DataBaseInfoMapper;
-import com.example.newv.service.TableService;
+
+import com.lhc.newV.system.entity.DataBaseInfo;
+import com.lhc.newV.system.mapper.DataBaseInfoMapper;
+import com.lhc.newV.system.service.TableService;
+import jakarta.annotation.Resource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+
 import java.util.List;
 
 /**
@@ -14,13 +17,12 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/dataBaseInfo")
+@RequiredArgsConstructor
 public class DataBaseInfoConll {
 
-    @Autowired
-    TableService tableService;
+    private final TableService tableService;
 
-    @Resource
-    DataBaseInfoMapper dataBaseInfoMapper;
+    private final DataBaseInfoMapper dataBaseInfoMapper;
 
 
     /**

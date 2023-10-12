@@ -1,8 +1,9 @@
 package com.lhc.newV.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.newv.entity.Table;
-import com.example.newv.entity.vo.TableColumnVO;
+
+import com.lhc.newV.system.entity.Table;
+import com.lhc.newV.system.entity.vo.TableColumnVO;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
