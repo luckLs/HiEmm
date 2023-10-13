@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.lhc.newV.db.MetaData;
 import com.lhc.newV.db.model.MyColumn;
 import com.lhc.newV.db.model.MyTable;
+import com.lhc.newV.db.sql.DBContext;
 import com.lhc.newV.framework.db.mysql.CustomMetaData;
 import com.lhc.newV.framework.db.mysql.utli.MD5Utli;
 import com.lhc.newV.system.entity.Column;
@@ -39,6 +40,9 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
 
     @Autowired
     ColumnServiceImpl columnServiceImpl;
+
+    @Autowired
+    DBContext dbConfig;
 
     @Resource
     ColumnMapper columnMapper;
@@ -89,7 +93,7 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         // 获取数据库信息
         DataBaseInfo dataBaseInfo = dataBaseInfoMapper.selectById(databaseInfoId);
         // 获取数据库表信息
-        MetaData metaData = new CustomMetaData();
+        MetaData metaData = dbConfig.PLUGIN_MAP.get(dataBaseInfo.getType()).getMetaData();
         List<MyTable> myTableList =  metaData.getTables(dataBaseInfo.getJdbcUrl(), dataBaseInfo.getUserName(), dataBaseInfo.getPassword());
         // 处理表和字段信息
         List<Column> columnList = new ArrayList<>();
