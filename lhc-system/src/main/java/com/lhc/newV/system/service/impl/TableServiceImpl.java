@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,30 +60,28 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
     @Override
     public List<ErTableVO> findList(TableColumnVO where) {
         List<TableColumnVO> tableColumnVOList = tableMapper.findList(where);
+        Map<String, ErTableVO> tableVoMap = tableColumnVOList.stream()
+                .collect(Collectors.groupingBy(TableColumnVO::getTableName,
+                        Collectors.collectingAndThen(Collectors.toList(), values -> {
+                            ErTableVO tableVo = new ErTableVO();
+                            tableVo.id = values.get(0).getTableId();
+                            tableVo.label = values.get(0).getTableName();
+                            //tableVo.tableDescription = values.get(0).getTableDescription();
+                            //tableVo.tableAlias = values.get(0).getTableAlias();
+                            tableVo.attrs = values.stream()
+                                    .map(tableColumnVO -> {
+                                        ErRelationVO r = new ErRelationVO();
+                                        r.key = tableColumnVO.getColumnName();
+                                        r.desc = tableColumnVO.getColumnDescription();
+                                        r.type = tableColumnVO.getDataType();
+                                        r.isPrimaryKey = tableColumnVO.getIsPrimaryKey();
+                                        r.columnAlias = tableColumnVO.getColumnAlias();
 
-
-//        Map<String, ErTableVO> tableVoMap = tableColumnVOList.stream()
-//                .collect(Collectors.groupingBy(TableColumnVO::getTableName,
-//                        Collectors.collectingAndThen(Collectors.toList(), values -> {
-//                            ErTableVO tableVo = new ErTableVO();
-//                            tableVo.id = values.get(0).getTableId();
-//                            tableVo.label = values.get(0).getTableName();
-//                            //tableVo.tableDescription = values.get(0).getTableDescription();
-//                            //tableVo.tableAlias = values.get(0).getTableAlias();
-//                            tableVo.attrs = values.stream()
-//                                    .map(tableColumnVO -> {
-//                                        ErRelationVO r = new ErRelationVO();
-//                                        r.key = tableColumnVO.getColumnName();
-//                                        r.desc = tableColumnVO.getColumnDescription();
-//                                        r.type = tableColumnVO.getDataType();
-//                                        r.isPrimaryKey = tableColumnVO.getIsPrimaryKey();
-//                                        r.columnAlias = tableColumnVO.getColumnAlias();
-//
-//                                        return r;
-//                                    })
-//                                    .collect(Collectors.toList());
-//                            return tableVo;
-//                        })));
+                                        return r;
+                                    })
+                                    .collect(Collectors.toList());
+                            return tableVo;
+                        })));
 //        //a();
         return new ArrayList<>(convertToErTableVOList(tableColumnVOList));
     }
