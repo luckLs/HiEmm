@@ -20,7 +20,7 @@ public class ErTableVO {
     /**
      * 字段
      */
-    public List<ErRelationVO> attrs;
+    public List<ErColumnVO> ports;
 
 
     /**

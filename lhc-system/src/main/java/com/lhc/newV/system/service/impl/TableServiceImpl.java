@@ -9,13 +9,12 @@ import com.lhc.newV.db.MetaData;
 import com.lhc.newV.db.model.MyColumn;
 import com.lhc.newV.db.model.MyTable;
 import com.lhc.newV.db.sql.DBContext;
-import com.lhc.newV.framework.db.mysql.CustomMetaData;
 import com.lhc.newV.framework.db.mysql.utli.MD5Utli;
 import com.lhc.newV.system.entity.Column;
 import com.lhc.newV.system.entity.DataBaseInfo;
 import com.lhc.newV.system.entity.Table;
 import com.lhc.newV.system.entity.vo.ErRelation;
-import com.lhc.newV.system.entity.vo.ErRelationVO;
+import com.lhc.newV.system.entity.vo.ErColumnVO;
 import com.lhc.newV.system.entity.vo.ErTableVO;
 import com.lhc.newV.system.entity.vo.TableColumnVO;
 import com.lhc.newV.system.mapper.ColumnMapper;
@@ -66,24 +65,19 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
                             ErTableVO tableVo = new ErTableVO();
                             tableVo.id = values.get(0).getTableId();
                             tableVo.label = values.get(0).getTableName();
-                            //tableVo.tableDescription = values.get(0).getTableDescription();
-                            //tableVo.tableAlias = values.get(0).getTableAlias();
-                            tableVo.attrs = values.stream()
-                                    .map(tableColumnVO -> {
-                                        ErRelationVO r = new ErRelationVO();
-                                        r.key = tableColumnVO.getColumnName();
-                                        r.desc = tableColumnVO.getColumnDescription();
-                                        r.type = tableColumnVO.getDataType();
-                                        r.isPrimaryKey = tableColumnVO.getIsPrimaryKey();
-                                        r.columnAlias = tableColumnVO.getColumnAlias();
-
-                                        return r;
-                                    })
-                                    .collect(Collectors.toList());
+                            tableVo.ports = values.stream().map(tableColumnVO -> {
+                                ErColumnVO r = new ErColumnVO();
+                                r.name = tableColumnVO.getColumnName();
+                                r.desc = tableColumnVO.getColumnDescription();
+                                r.type = tableColumnVO.getDataType();
+                                r.isPrimaryKey = tableColumnVO.getIsPrimaryKey();
+                                r.columnAlias = tableColumnVO.getColumnAlias();
+                                return r;
+                            }).collect(Collectors.toList());
                             return tableVo;
                         })));
-//        //a();
-        return new ArrayList<>(convertToErTableVOList(tableColumnVOList));
+
+        return new ArrayList<>(convertToReturn(tableColumnVOList));
     }
 
     @Override
@@ -171,9 +165,8 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
 
 
 
-    public static List<ErTableVO> convertToErTableVOList(List<TableColumnVO> tableColumnVOList) {
+    public static Map<String,Object> convertToReturn(List<TableColumnVO> tableColumnVOList) {
         Map<String, ErTableVO> erTableVOMap = new HashMap<>();
-
         for (TableColumnVO columnVO : tableColumnVOList) {
             ErTableVO erTableVO = erTableVOMap.computeIfAbsent(
                     columnVO.getTableName(),
@@ -183,13 +176,13 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
                         newErTableVO.label = columnVO.getTableName();
                         newErTableVO.tableDescription = columnVO.getTableDescription();
                         newErTableVO.tableAlias = columnVO.getTableAlias();
-                        newErTableVO.attrs = new ArrayList<>();
+                        newErTableVO.ports = new ArrayList<>();
                         return newErTableVO;
                     }
             );
 
-            ErRelationVO erRelationVO = new ErRelationVO();
-            erRelationVO.key = columnVO.getColumnName();
+            ErColumnVO erRelationVO = new ErColumnVO();
+            erRelationVO.name = columnVO.getColumnName();
             erRelationVO.type = columnVO.getDataType();
             erRelationVO.desc = columnVO.getColumnDescription();
             erRelationVO.isPrimaryKey = columnVO.getIsPrimaryKey();
@@ -197,9 +190,8 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
 
             if (columnVO.getForeignKeyId() != null) {
                 ErRelation erRelation = new ErRelation();
-                erRelation.key = "id";
-                erRelation.nodeId = columnVO.getForeignKeyName();
-                erRelationVO.relation = List.of(erRelation);
+                erRelation.staNode = columnVO.getForeignKeyId();
+                erRelation.endNode = columnVO.getColumnId();
             }
 
             erTableVO.attrs.add(erRelationVO);

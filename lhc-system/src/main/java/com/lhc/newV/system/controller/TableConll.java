@@ -29,7 +29,7 @@ public class TableConll {
         return tableService.findList(where);
     }
 
-    @GetMapping("/test")
+   @GetMapping("/test")
    public String test() {
         return "Hello World";
     }

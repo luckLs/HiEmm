@@ -6,12 +6,12 @@ package com.lhc.newV.system.entity.vo;
 public class ErRelation {
 
     /**
-     * 指向的表字段
+     * 开始节点
      */
-    public String key;
+    public Integer staNode;
 
     /**
-     * 指向的表名
+     * 结束节点
      */
-    public String nodeId;
+    public Integer endNode;
 }

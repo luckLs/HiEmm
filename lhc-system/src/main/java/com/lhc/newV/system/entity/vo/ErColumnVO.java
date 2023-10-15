@@ -1,18 +1,21 @@
 package com.lhc.newV.system.entity.vo;
 
-import java.util.List;
-
 /**
  * 字段er
  * @Email 1721316224@qq.com
  * @Author:liaohaicheng
  */
-public class ErRelationVO {
+public class ErColumnVO {
+
+    /**
+     * id
+     */
+    public Integer id;
 
     /**
      * 字段名
      */
-    public String key;
+    public String name;
 
     /**
      * 字段类型
@@ -34,11 +37,5 @@ public class ErRelationVO {
      * 列别名
      */
     public String columnAlias;
-
-
-    /**
-     * 表之间的关系指向
-     */
-    public List<ErRelation> relation;
 
 }
