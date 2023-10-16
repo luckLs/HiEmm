@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lhc
@@ -25,7 +26,7 @@ public class TableConll {
 
 
     @GetMapping
-    public List<ErTableVO> get(@ModelAttribute TableColumnVO where) {
+    public Map<String,List<?>> get(@ModelAttribute TableColumnVO where) {
         return tableService.findList(where);
     }
 

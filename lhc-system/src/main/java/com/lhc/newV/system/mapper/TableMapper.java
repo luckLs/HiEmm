@@ -1,5 +1,6 @@
 package com.lhc.newV.system.mapper;
 
+import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import com.lhc.newV.system.entity.Table;
@@ -17,4 +18,7 @@ public interface TableMapper extends BaseMapper<Table> {
 
     @Select("SELECT a.* FROM n_table a , n_column b,n_column c WHERE   a.id = b.table_id and b.id = c.foreign_key_id and c.foreign_key_id = ${foreignKeyId} LIMIT 1")
     Table getTableByForeignKeyId(Integer foreignKeyId);
+
+    /** 根据表id，查找所有关系表 **/
+    List<JSONObject> findForeignTablesByTableId(List<Integer> tableIds);
 }

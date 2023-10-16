@@ -27,4 +27,18 @@
             </if>
         </where>
     </select>
+
+    <select id="findForeignTablesByTableId" resultType="cn.hutool.json.JSONObject">
+        SELECT
+            table_id , foreign_table_id
+        FROM
+            n_column
+        WHERE
+            foreign_table_id is not null;
+            and(
+                table_id in <foreach collection="tableIds" item="item" open="(" separator="," close=")">'${item}'</foreach>
+                or
+                foreign_table_id in <foreach collection="tableIds" item="item" open="(" separator="," close=")">'${item}'</foreach>
+            )
+    </select>
 </mapper>

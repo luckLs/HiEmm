@@ -1,5 +1,7 @@
 package com.lhc.newV.system.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.json.JSONObject;
 import com.alibaba.druid.support.json.JSONUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -13,7 +15,7 @@ import com.lhc.newV.framework.db.mysql.utli.MD5Utli;
 import com.lhc.newV.system.entity.Column;
 import com.lhc.newV.system.entity.DataBaseInfo;
 import com.lhc.newV.system.entity.Table;
-import com.lhc.newV.system.entity.vo.ErRelation;
+import com.lhc.newV.system.entity.vo.ErRelationVO;
 import com.lhc.newV.system.entity.vo.ErColumnVO;
 import com.lhc.newV.system.entity.vo.ErTableVO;
 import com.lhc.newV.system.entity.vo.TableColumnVO;
@@ -28,11 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -57,27 +55,45 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
     DataBaseInfoMapper dataBaseInfoMapper;
 
     @Override
-    public List<ErTableVO> findList(TableColumnVO where) {
-        List<TableColumnVO> tableColumnVOList = tableMapper.findList(where);
-        Map<String, ErTableVO> tableVoMap = tableColumnVOList.stream()
-                .collect(Collectors.groupingBy(TableColumnVO::getTableName,
-                        Collectors.collectingAndThen(Collectors.toList(), values -> {
-                            ErTableVO tableVo = new ErTableVO();
-                            tableVo.id = values.get(0).getTableId();
-                            tableVo.label = values.get(0).getTableName();
-                            tableVo.ports = values.stream().map(tableColumnVO -> {
-                                ErColumnVO r = new ErColumnVO();
-                                r.name = tableColumnVO.getColumnName();
-                                r.desc = tableColumnVO.getColumnDescription();
-                                r.type = tableColumnVO.getDataType();
-                                r.isPrimaryKey = tableColumnVO.getIsPrimaryKey();
-                                r.columnAlias = tableColumnVO.getColumnAlias();
-                                return r;
-                            }).collect(Collectors.toList());
-                            return tableVo;
-                        })));
+    public Map<String, List<?>> findList(TableColumnVO where) {
+        Map<String, ErTableVO> erTableMap = new HashMap<>();
+        List<ErTableVO> erTableVOList = new ArrayList<>();
+        List<ErRelationVO> erRelationVOList = new ArrayList<>();
 
-        return new ArrayList<>(convertToReturn(tableColumnVOList));
+        List<TableColumnVO> tableColumnVOList = tableMapper.findList(where);
+        for (TableColumnVO tableColumnVO : tableColumnVOList) {
+            String tableName = tableColumnVO.getTableName();
+            ErTableVO erTableVO = erTableMap.getOrDefault(tableName, new ErTableVO());
+            if (erTableVO.id == null) {
+                erTableVO.id = tableColumnVO.getTableId();
+                erTableVO.label = tableColumnVO.getTableName();
+                erTableVO.tableDescription = tableColumnVO.getTableDescription();
+                erTableVO.tableAlias = tableColumnVO.getTableAlias();
+                erTableVO.ports = new ArrayList<>();
+                erTableMap.put(tableName, erTableVO);
+                erTableVOList.add(erTableVO);
+            }
+            ErColumnVO erColumnVO = new ErColumnVO();
+            erColumnVO.id = tableColumnVO.getColumnId();
+            erColumnVO.name = tableColumnVO.getColumnName();
+            erColumnVO.desc = tableColumnVO.getColumnDescription();
+            erColumnVO.type = tableColumnVO.getDataType();
+            erColumnVO.isPrimaryKey = tableColumnVO.getIsPrimaryKey();
+            erColumnVO.columnAlias = tableColumnVO.getColumnAlias();
+            erTableVO.ports.add(erColumnVO);
+            if (tableColumnVO.getForeignKeyId() != null) {
+                ErRelationVO erRelation = new ErRelationVO();
+                erRelation.id = tableColumnVO.getTableId() + "_" + tableColumnVO.getColumnId();
+                erRelation.staNode = tableColumnVO.getForeignKeyId();
+                erRelation.endNode = tableColumnVO.getColumnId();
+                erRelationVOList.add(erRelation);
+            }
+        }
+        Map<String, List<?>> returnList = new HashMap<>();
+
+        returnList.put("table", erTableVOList);
+        returnList.put("relation", erRelationVOList);
+        return returnList;
     }
 
     @Override
@@ -87,7 +103,7 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         DataBaseInfo dataBaseInfo = dataBaseInfoMapper.selectById(databaseInfoId);
         // 获取数据库表信息
         MetaData metaData = dbConfig.PLUGIN_MAP.get(dataBaseInfo.getType()).getMetaData();
-        List<MyTable> myTableList =  metaData.getTables(dataBaseInfo.getJdbcUrl(), dataBaseInfo.getUserName(), dataBaseInfo.getPassword());
+        List<MyTable> myTableList = metaData.getTables(dataBaseInfo.getJdbcUrl(), dataBaseInfo.getUserName(), dataBaseInfo.getPassword());
         // 处理表和字段信息
         List<Column> columnList = new ArrayList<>();
         List<Table> tableList = new ArrayList<>();
@@ -103,10 +119,7 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             table.setDatabaseInfoId(dataBaseInfo.getId());
             table.setAlias(MD5Utli.get_7(myTable.name));
 
-            // 现在有几张表如下
-            //StringBuilder aiCorpus = new StringBuilder();
-            //aiCorpus.append(".表：").append(table.getName());
-            //aiCorpus.append("字段有：");
+
             this.save(table);
             // 遍历表中的字段信息
             for (MyColumn myColumn : myTable.columnList) {
@@ -119,7 +132,6 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
                 column.setIsPrimaryKey(myColumn.isKey);
                 column.setDescription(myColumn.comment);
                 column.setAlias(MD5Utli.get_7(myColumn.field));
-                //aiCorpus.append("[" + column.getAlias() + "]");
                 Db.save(column);
                 columnList.add(column);
                 // 处理主键
@@ -133,7 +145,7 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             if (column.getName().endsWith("_id")) {
                 String foreignKeyTable = column.getName().substring(0, column.getName().length() - 3);
                 if (null != tablePrimaryKeyMap.get(foreignKeyTable)) {
-                        column.setForeignTableId((int) tablePrimaryKeyMap.get(foreignKeyTable)[0]);
+                    column.setForeignTableId((int) tablePrimaryKeyMap.get(foreignKeyTable)[0]);
                     column.setForeignKeyId((int) tablePrimaryKeyMap.get(foreignKeyTable)[1]);
                 }
             }
@@ -163,41 +175,28 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
     }
 
 
+    public HashSet<Integer> get(List<Integer> findIds,HashSet<Integer> haveIds){
+        List<JSONObject> foreignTablesByTableId = tableMapper.findForeignTablesByTableId(findIds);
+        for(JSONObject i : foreignTablesByTableId){
+            findIds = new ArrayList<>();
+            Integer tableId = i.getInt("tableId");
+            Integer foreignTableId = i.getInt("foreignTableId");
 
-
-    public static Map<String,Object> convertToReturn(List<TableColumnVO> tableColumnVOList) {
-        Map<String, ErTableVO> erTableVOMap = new HashMap<>();
-        for (TableColumnVO columnVO : tableColumnVOList) {
-            ErTableVO erTableVO = erTableVOMap.computeIfAbsent(
-                    columnVO.getTableName(),
-                    tableName -> {
-                        ErTableVO newErTableVO = new ErTableVO();
-                        newErTableVO.id = columnVO.getTableId();
-                        newErTableVO.label = columnVO.getTableName();
-                        newErTableVO.tableDescription = columnVO.getTableDescription();
-                        newErTableVO.tableAlias = columnVO.getTableAlias();
-                        newErTableVO.ports = new ArrayList<>();
-                        return newErTableVO;
-                    }
-            );
-
-            ErColumnVO erRelationVO = new ErColumnVO();
-            erRelationVO.name = columnVO.getColumnName();
-            erRelationVO.type = columnVO.getDataType();
-            erRelationVO.desc = columnVO.getColumnDescription();
-            erRelationVO.isPrimaryKey = columnVO.getIsPrimaryKey();
-            erRelationVO.columnAlias = columnVO.getColumnAlias();
-
-            if (columnVO.getForeignKeyId() != null) {
-                ErRelation erRelation = new ErRelation();
-                erRelation.staNode = columnVO.getForeignKeyId();
-                erRelation.endNode = columnVO.getColumnId();
+            if(haveIds.contains(tableId)){
+                findIds.add(tableId);
             }
 
-            erTableVO.attrs.add(erRelationVO);
-        }
+            if(haveIds.contains(foreignTableId)){
+                findIds.add(foreignTableId);
+            }
 
-        return new ArrayList<>(erTableVOMap.values());
+            haveIds.add(tableId);
+            haveIds.add(foreignTableId);
+        };
+        if(CollUtil.isNotEmpty(foreignTablesByTableId)){
+            tableMapper.findForeignTablesByTableId(findIds);
+        }
+        return haveIds;
     }
 
 }

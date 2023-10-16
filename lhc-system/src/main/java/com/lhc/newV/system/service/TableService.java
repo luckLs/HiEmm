@@ -8,10 +8,11 @@ import com.lhc.newV.system.entity.vo.TableColumnVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public interface TableService extends IService<Table> {
-    List<ErTableVO> findList(TableColumnVO where);
+    Map<String,List<?>> findList(TableColumnVO where);
 
     void openSyncDataBaseInfo(Integer databaseInfoId);
 
