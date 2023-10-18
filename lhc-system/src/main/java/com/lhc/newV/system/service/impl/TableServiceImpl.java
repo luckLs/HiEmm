@@ -57,8 +57,9 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
     @Override
     public Map<String, List<?>> findList(TableColumnVO where) {
         List<Integer> findIds = new ArrayList<>();
-        findIds.add(45);
-        this.findForeignTablesByTableId(findIds,new HashSet<>());
+        findIds.add(where.getTableId());
+        HashSet<Integer> foreignTablesByTableId = this.findForeignTablesByTableId(findIds, new HashSet<>());
+        where.setTableIds(foreignTablesByTableId);
 
         Map<String, ErTableVO> erTableMap = new HashMap<>();
         List<ErTableVO> erTableVOList = new ArrayList<>();
@@ -186,18 +187,18 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             Integer tableId = i.getInt("tableId");
             Integer foreignTableId = i.getInt("foreignTableId");
 
-            if(haveIds.contains(tableId)){
+            if(!haveIds.contains(tableId)){
                 findIds.add(tableId);
             }
 
-            if(haveIds.contains(foreignTableId)){
+            if(!haveIds.contains(foreignTableId)){
                 findIds.add(foreignTableId);
             }
 
             haveIds.add(tableId);
             haveIds.add(foreignTableId);
         };
-        if(CollUtil.isNotEmpty(foreignTablesByTableId)){
+        if(CollUtil.isNotEmpty(foreignTablesByTableId) && CollUtil.isNotEmpty(findIds)){
             findForeignTablesByTableId(findIds,haveIds);
         }
         return haveIds;

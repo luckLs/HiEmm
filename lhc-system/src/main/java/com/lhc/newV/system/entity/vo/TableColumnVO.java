@@ -2,6 +2,9 @@ package com.lhc.newV.system.entity.vo;
 
 import lombok.Data;
 
+import java.util.HashSet;
+import java.util.List;
+
 @Data
 public class TableColumnVO {
     /**
@@ -12,7 +15,7 @@ public class TableColumnVO {
     /**
      * 表id
      */
-    private String tableId;
+    private Integer tableId;
 
     /**
      * 表描述
@@ -69,4 +72,6 @@ public class TableColumnVO {
      * 外键_表name
      */
     private String foreignKeyName;
+
+    private HashSet<Integer> tableIds;
 }

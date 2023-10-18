@@ -25,16 +25,19 @@
             <if test="foreignKeyName!=''">
                 and b.name like '%${foreignKeyName}%'
             </if>
+            <if test="tableIds!=null">
+                and b.table_id in <foreach collection="tableIds" item="item" open="(" separator="," close=")">'${item}'</foreach>
+            </if>
         </where>
     </select>
 
     <select id="findForeignTablesByTableId" resultType="cn.hutool.json.JSONObject">
         SELECT
-            table_id , foreign_table_id
+            table_id tableId, foreign_table_id foreignTableId
         FROM
             n_column
         WHERE
-            foreign_table_id is not null;
+            foreign_table_id is not null
             and(
                 table_id in <foreach collection="tableIds" item="item" open="(" separator="," close=")">'${item}'</foreach>
                 or

@@ -10,7 +10,7 @@ public class ErTableVO {
     /**
      * 节id（表Id）
      **/
-    public String id;
+    public Integer id;
 
     /**
      * 节点名（表名）
