@@ -72,6 +72,8 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             if (erTableVO.id == null) {
                 erTableVO.id = tableColumnVO.getTableId();
                 erTableVO.label = tableColumnVO.getTableName();
+                erTableVO.positionX = tableColumnVO.getPositionX();
+                erTableVO.positionY = tableColumnVO.getPositionY();
                 erTableVO.tableDescription = tableColumnVO.getTableDescription();
                 erTableVO.tableAlias = tableColumnVO.getTableAlias();
                 erTableVO.ports = new ArrayList<>();

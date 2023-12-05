@@ -28,6 +28,16 @@ public class Table {
      **/
     private String description;
 
+    /**
+     * 坐标X
+     **/
+    private String positionX;
+
+    /**
+     * 坐标Y
+     **/
+    private String positionY;
+
 
     private String alias;
 }

@@ -33,5 +33,15 @@ public class ErTableVO {
      */
     public String tableAlias;
 
+    /**
+     * 坐标X
+     **/
+    public Integer positionX;
+
+    /**
+     * 坐标Y
+     **/
+    public Integer positionY;
+
 
 }

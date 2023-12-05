@@ -7,6 +7,8 @@
             a.NAME tableName,
             a.description tableDescription,
             a.alias tableAlias,
+            a.position_x,
+            a.position_y,
             b.id columnId,
             b.name columnName,
             b.alias columnAlias,
@@ -25,7 +27,7 @@
             <if test="foreignKeyName!=''">
                 and b.name like '%${foreignKeyName}%'
             </if>
-            <if test="tableIds!=null">
+            <if test="tableIds!=null and tableIds.size > 0">
                 and b.table_id in <foreach collection="tableIds" item="item" open="(" separator="," close=")">'${item}'</foreach>
             </if>
         </where>

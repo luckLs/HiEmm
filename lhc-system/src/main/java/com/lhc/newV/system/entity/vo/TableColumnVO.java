@@ -28,6 +28,16 @@ public class TableColumnVO {
     private String tableAlias;
 
     /**
+     * 坐标X
+     **/
+    private Integer positionX;
+
+    /**
+     * 坐标Y
+     **/
+    private Integer positionY;
+
+    /**
      * 列ID
      */
     private Integer columnId;

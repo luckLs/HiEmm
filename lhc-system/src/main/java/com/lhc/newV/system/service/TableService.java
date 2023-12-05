@@ -12,6 +12,7 @@ import java.util.Map;
 
 @Service
 public interface TableService extends IService<Table> {
+
     Map<String,List<?>> findList(TableColumnVO where);
 
     void openSyncDataBaseInfo(Integer databaseInfoId);
