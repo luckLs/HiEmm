@@ -31,12 +31,12 @@ public class Table {
     /**
      * 坐标X
      **/
-    private String positionX;
+    private Integer positionX;
 
     /**
      * 坐标Y
      **/
-    private String positionY;
+    private Integer positionY;
 
 
     private String alias;
