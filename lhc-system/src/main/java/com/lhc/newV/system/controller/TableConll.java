@@ -1,17 +1,13 @@
 package com.lhc.newV.system.controller;
 
 
-import cn.hutool.core.bean.BeanUtil;
 import com.lhc.newV.system.entity.Column;
 import com.lhc.newV.system.entity.Table;
-import com.lhc.newV.system.entity.vo.TableColumnVO;
-import com.lhc.newV.system.entity.vo.TableVo;
 import com.lhc.newV.system.service.ColumnService;
 import com.lhc.newV.system.service.TableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,9 +24,15 @@ public class TableConll {
     private final ColumnService columnService;
 
 
-    @GetMapping
-    public Map<String, List<?>> get(@ModelAttribute TableColumnVO where) {
-        return tableService.findList(where);
+    /**
+     *  ER图
+     * @param tableId 表id
+     * @param otherTableIdIds 其他表id
+     * @return Er图
+     */
+    @GetMapping("er")
+    public Map<String, List<?>> getEr(Integer tableId,String otherTableIdIds) {
+        return tableService.getEr(tableId,otherTableIdIds);
     }
 
     @GetMapping("list")

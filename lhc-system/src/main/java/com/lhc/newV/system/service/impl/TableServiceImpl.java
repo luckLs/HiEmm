@@ -1,6 +1,7 @@
 package com.lhc.newV.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.alibaba.druid.support.json.JSONUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -21,51 +22,49 @@ import com.lhc.newV.system.entity.vo.ErTableVO;
 import com.lhc.newV.system.entity.vo.TableColumnVO;
 import com.lhc.newV.system.mapper.ColumnMapper;
 import com.lhc.newV.system.mapper.DataBaseInfoMapper;
-import com.lhc.newV.system.mapper.ForeignKeyMapper;
 import com.lhc.newV.system.mapper.TableMapper;
 import com.lhc.newV.system.service.TableService;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+/**
+ * @author luck
+ */
 @Service
 @RequiredArgsConstructor
 public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements TableService {
 
-    @Autowired
-    ColumnServiceImpl columnServiceImpl;
-
-    @Autowired
-    DBContext dbConfig;
-
-    @Resource
-    ColumnMapper columnMapper;
-
-    @Resource
-    ForeignKeyMapper foreignKeyMapper;
-
-    @Resource
-    TableMapper tableMapper;
-
-    @Resource
-    DataBaseInfoMapper dataBaseInfoMapper;
+    private final DBContext dbConfig;
+    private final ColumnMapper columnMapper;
+    private final TableMapper tableMapper;
+    private final DataBaseInfoMapper dataBaseInfoMapper;
 
     @Override
-    public Map<String, List<?>> findList(TableColumnVO where) {
-        List<Integer> findIds = new ArrayList<>();
-        findIds.add(where.getTableId());
-        HashSet<Integer> foreignTablesByTableId = this.findForeignTablesByTableId(findIds, new HashSet<>());
-        where.setTableIds(foreignTablesByTableId);
+    public Map<String, List<?>> getEr(Integer tableId, String otherTableIdIds) {
+        // 根据表id，查找所有关系表
+        Set<Integer> tableIds = new HashSet<>();
 
-        Map<String, ErTableVO> erTableMap = new HashMap<>();
+        if (null != tableId) {
+            tableIds = this.findForeignTablesByTableId(tableId);
+        }
+
+
+        // 其它表的id加入到查询
+        if (StrUtil.isNotEmpty(otherTableIdIds) && tableIds != null) {
+            tableIds.addAll(Arrays.stream(otherTableIdIds.split(",")).map(Integer::parseInt).toList());
+        }
+
+        // 封装返回表的ER图关系
+        Map<String, ErTableVO> erTableMap = new HashMap<>(100);
         List<ErTableVO> erTableVOList = new ArrayList<>();
         List<ErRelationVO> erRelationVOList = new ArrayList<>();
 
-        List<TableColumnVO> tableColumnVOList = tableMapper.findList(where);
+        List<TableColumnVO> tableColumnVOList = tableMapper.findList(tableIds);
         for (TableColumnVO tableColumnVO : tableColumnVOList) {
             String tableName = tableColumnVO.getTableName();
             ErTableVO erTableVO = erTableMap.getOrDefault(tableName, new ErTableVO());
@@ -96,8 +95,7 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
                 erRelationVOList.add(erRelation);
             }
         }
-        Map<String, List<?>> returnList = new HashMap<>();
-
+        Map<String, List<?>> returnList = new HashMap<>(2);
         returnList.put("table", erTableVOList);
         returnList.put("relation", erRelationVOList);
         return returnList;
@@ -113,10 +111,9 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         List<MyTable> myTableList = metaData.getTables(dataBaseInfo.getJdbcUrl(), dataBaseInfo.getUserName(), dataBaseInfo.getPassword());
         // 处理表和字段信息
         List<Column> columnList = new ArrayList<>();
-        List<Table> tableList = new ArrayList<>();
         List<String> primaryKeyList = new ArrayList<>();
         // 主键tablePrimaryKeyMap--> K-表名:v主键
-        Map<String, Object[]> tablePrimaryKeyMap = new HashMap<>();
+        Map<String, Object[]> tablePrimaryKeyMap = new HashMap<>(100);
 
         for (MyTable myTable : myTableList) {
             // 保存表信息
@@ -181,29 +178,29 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         System.out.println(JSONUtils.toJSONString(tabMap));
     }
 
-
-    public HashSet<Integer> findForeignTablesByTableId(List<Integer> findIds,HashSet<Integer> haveIds){
-        List<JSONObject> foreignTablesByTableId = tableMapper.findForeignTablesByTableId(findIds);
-        for(JSONObject i : foreignTablesByTableId){
-            findIds = new ArrayList<>();
-            Integer tableId = i.getInt("tableId");
-            Integer foreignTableId = i.getInt("foreignTableId");
-
-            if(!haveIds.contains(tableId)){
-                findIds.add(tableId);
-            }
-
-            if(!haveIds.contains(foreignTableId)){
-                findIds.add(foreignTableId);
-            }
-
-            haveIds.add(tableId);
-            haveIds.add(foreignTableId);
-        };
-        if(CollUtil.isNotEmpty(foreignTablesByTableId) && CollUtil.isNotEmpty(findIds)){
-            findForeignTablesByTableId(findIds,haveIds);
-        }
-        return haveIds;
+    /**
+     * 根据表id，查找所有关系表
+     **/
+    public Set<Integer> findForeignTablesByTableId(int tableId) {
+        Set<Integer> visited = new HashSet<>();
+        findForeignTablesRecursively(tableId, visited);
+        return visited;
     }
+
+    /**
+     * 递归查找表的关系表
+     **/
+    private void findForeignTablesRecursively(int currentTableId, Set<Integer> visited) {
+        if (!visited.contains(currentTableId)) {
+            visited.add(currentTableId);
+            // 查询当前表的关系表
+            List<JSONObject> foreignTables = tableMapper.findForeignTablesByTableId(currentTableId);
+            for (JSONObject foreignTable : foreignTables) {
+                findForeignTablesRecursively(foreignTable.getInt("tableId"), visited);
+                findForeignTablesRecursively(foreignTable.getInt("foreignTableId"), visited);
+            }
+        }
+    }
+
 
 }

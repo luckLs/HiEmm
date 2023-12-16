@@ -1,7 +1,5 @@
 package com.lhc.newV.system.mapper;
 
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -19,6 +17,9 @@ public interface SelectMapper {
      *
      * @return k-v-d
      */
-    @Select("select id k, name v, description d from n_table")
-    List<Map<String, String>> getTables();
+    @Select("select id k, name v, description d from n_table where database_info_id = #{param1}")
+    List<Map<String, String>> getTables(String param1);
+
+    @Select("select id k, name v, description d from n_data_base_info")
+    List<Map<String, String>> getDataBaseInfo();
 }
