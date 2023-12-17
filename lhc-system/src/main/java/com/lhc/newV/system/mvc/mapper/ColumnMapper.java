@@ -1,7 +1,7 @@
-package com.lhc.newV.system.mapper;
+package com.lhc.newV.system.mvc.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.lhc.newV.system.entity.Column;
+import com.lhc.newV.system.mvc.entity.Column;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 
@@ -16,6 +16,6 @@ public interface ColumnMapper extends BaseMapper<Column> {
     /**
      * 更新主外键关系
      */
-    @Update("update n_column set foreign_key_id = #{foreignKeyId},foreign_table_id=#{foreignTableId} where id = #{id}")
+    @Update("update db_column set foreign_key_id = #{foreignKeyId},foreign_table_id=#{foreignTableId} where id = #{id}")
     void updateRelationshipLine(@Param("id") Integer id, @Param("foreignKeyId") Integer foreignKeyId, @Param("foreignTableId") Integer foreignTableId);
 }

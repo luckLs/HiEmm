@@ -1,8 +1,8 @@
-package com.lhc.newV.system.service;
+package com.lhc.newV.system.mvc.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import com.lhc.newV.system.entity.Column;
+import com.lhc.newV.system.mvc.entity.Column;
 import org.springframework.stereotype.Service;
 
 @Service

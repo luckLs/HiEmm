@@ -1,13 +1,15 @@
-package com.lhc.newV.system.entity;
+package com.lhc.newV.system.mvc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
  * 表表示数据表中的列
  **/
 @Data
+@TableName("db_column")
 public class Column {
     @TableId(type = IdType.AUTO)
     private Integer id;

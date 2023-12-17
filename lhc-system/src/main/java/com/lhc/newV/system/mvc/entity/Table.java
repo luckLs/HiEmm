@@ -1,7 +1,8 @@
-package com.lhc.newV.system.entity;
+package com.lhc.newV.system.mvc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -9,6 +10,7 @@ import lombok.Data;
  * @author liaohaicheng
  * */
 @Data
+@TableName("db_table")
 public class Table {
     @TableId(type = IdType.AUTO)
     private Integer id;

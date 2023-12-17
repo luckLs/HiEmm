@@ -1,4 +1,4 @@
-//package import com.lhc.newV.config;
+//package com.lhc.newV.framework.db.mybatis.confg;
 //
 //import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 //import org.springframework.beans.factory.annotation.Autowired;

@@ -1,10 +1,10 @@
-package com.lhc.newV.system.controller;
+package com.lhc.newV.system.mvc.controller;
 
 
-import com.lhc.newV.system.entity.Column;
-import com.lhc.newV.system.entity.Table;
-import com.lhc.newV.system.service.ColumnService;
-import com.lhc.newV.system.service.TableService;
+import com.lhc.newV.system.mvc.entity.Column;
+import com.lhc.newV.system.mvc.entity.Table;
+import com.lhc.newV.system.mvc.service.ColumnService;
+import com.lhc.newV.system.mvc.service.TableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

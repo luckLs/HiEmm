@@ -11,7 +11,7 @@ public class MyColumn {
     public String field;
 
     /**
-     * 类型 比如：int(11)
+     * 类型 比如：int
      **/
     public String type;
 

@@ -1,12 +1,11 @@
-package com.lhc.newV.system.service.impl;
+package com.lhc.newV.system.mvc.service.impl;
 
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.lhc.newV.system.entity.Column;
-import com.lhc.newV.system.mapper.ColumnMapper;
-import com.lhc.newV.system.service.ColumnService;
+import com.lhc.newV.system.mvc.entity.Column;
+import com.lhc.newV.system.mvc.mapper.ColumnMapper;
+import com.lhc.newV.system.mvc.service.ColumnService;
 
-import com.lhc.newV.system.service.TableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

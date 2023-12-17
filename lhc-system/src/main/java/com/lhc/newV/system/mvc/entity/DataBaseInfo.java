@@ -1,7 +1,8 @@
-package com.lhc.newV.system.entity;
+package com.lhc.newV.system.mvc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import java.io.Serializable;
  * @author lhc
  */
 @Data
+@TableName("db_data_base_info")
 public class DataBaseInfo implements Serializable {
     /**
      * 库 ID
@@ -53,4 +55,9 @@ public class DataBaseInfo implements Serializable {
      * 密码
      */
     private String password;
+
+    /**
+     * 设置外键的规则
+     */
+    private String setFkRule;
 }

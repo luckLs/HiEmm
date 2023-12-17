@@ -1,7 +1,7 @@
-package com.lhc.newV.system.mapper;
+package com.lhc.newV.system.mvc.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.lhc.newV.system.entity.DataBaseInfo;
+import com.lhc.newV.system.mvc.entity.DataBaseInfo;
 
 
 /**

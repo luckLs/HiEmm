@@ -1,6 +1,5 @@
-package com.lhc.newV.system.service.impl;
+package com.lhc.newV.system.mvc.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.alibaba.druid.support.json.JSONUtils;
@@ -13,24 +12,23 @@ import com.lhc.newV.db.model.MyColumn;
 import com.lhc.newV.db.model.MyTable;
 import com.lhc.newV.db.sql.DBContext;
 import com.lhc.newV.framework.db.mysql.utli.MD5Utli;
-import com.lhc.newV.system.entity.Column;
-import com.lhc.newV.system.entity.DataBaseInfo;
-import com.lhc.newV.system.entity.Table;
-import com.lhc.newV.system.entity.vo.ErRelationVO;
-import com.lhc.newV.system.entity.vo.ErColumnVO;
-import com.lhc.newV.system.entity.vo.ErTableVO;
-import com.lhc.newV.system.entity.vo.TableColumnVO;
-import com.lhc.newV.system.mapper.ColumnMapper;
-import com.lhc.newV.system.mapper.DataBaseInfoMapper;
-import com.lhc.newV.system.mapper.TableMapper;
-import com.lhc.newV.system.service.TableService;
+import com.lhc.newV.system.mvc.entity.Column;
+import com.lhc.newV.system.mvc.entity.DataBaseInfo;
+import com.lhc.newV.system.mvc.entity.Table;
+import com.lhc.newV.system.mvc.entity.vo.ErRelationVO;
+import com.lhc.newV.system.mvc.entity.vo.ErColumnVO;
+import com.lhc.newV.system.mvc.entity.vo.ErTableVO;
+import com.lhc.newV.system.mvc.entity.vo.TableColumnVO;
+import com.lhc.newV.system.mvc.mapper.ColumnMapper;
+import com.lhc.newV.system.mvc.mapper.DataBaseInfoMapper;
+import com.lhc.newV.system.mvc.mapper.TableMapper;
+import com.lhc.newV.system.mvc.service.TableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.lhc.newV.system.common.util.dbUtil.DBConnectForeignTablesUtil;
 
 /**
  * @author luck
@@ -106,13 +104,14 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
     public void openSyncDataBaseInfo(Integer databaseInfoId) {
         // 获取数据库信息
         DataBaseInfo dataBaseInfo = dataBaseInfoMapper.selectById(databaseInfoId);
-        // 获取数据库表信息
+        // 根据数据库type类型，获取数据库表信息
         MetaData metaData = dbConfig.PLUGIN_MAP.get(dataBaseInfo.getType()).getMetaData();
         List<MyTable> myTableList = metaData.getTables(dataBaseInfo.getJdbcUrl(), dataBaseInfo.getUserName(), dataBaseInfo.getPassword());
+
         // 处理表和字段信息
         List<Column> columnList = new ArrayList<>();
         List<String> primaryKeyList = new ArrayList<>();
-        // 主键tablePrimaryKeyMap--> K-表名:v主键
+        // 主键tablePrimaryKeyMap--> K-表名:v-[表id 主键id]
         Map<String, Object[]> tablePrimaryKeyMap = new HashMap<>(100);
 
         for (MyTable myTable : myTableList) {
@@ -122,9 +121,8 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             table.setDescription(myTable.description);
             table.setDatabaseInfoId(dataBaseInfo.getId());
             table.setAlias(MD5Utli.get_7(myTable.name));
-
-
             this.save(table);
+
             // 遍历表中的字段信息
             for (MyColumn myColumn : myTable.columnList) {
                 // 保存字段信息
@@ -137,6 +135,7 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
                 column.setDescription(myColumn.comment);
                 column.setAlias(MD5Utli.get_7(myColumn.field));
                 Db.save(column);
+
                 columnList.add(column);
                 // 处理主键
                 if (myColumn.isKey) {
@@ -145,17 +144,14 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
                 }
             }
         }
-        columnList.forEach(column -> {
-            if (column.getName().endsWith("_id")) {
-                String foreignKeyTable = column.getName().substring(0, column.getName().length() - 3);
-                if (null != tablePrimaryKeyMap.get(foreignKeyTable)) {
-                    column.setForeignTableId((int) tablePrimaryKeyMap.get(foreignKeyTable)[0]);
-                    column.setForeignKeyId((int) tablePrimaryKeyMap.get(foreignKeyTable)[1]);
-                }
-            }
-        });
+
+        // 处理外键关系
+        DBConnectForeignTablesUtil.setForeignTable(dataBaseInfo, columnList, tablePrimaryKeyMap);
         Db.updateBatchById(columnList);
+
     }
+
+
 
     public void a() {
         List<Table> tables = tableMapper.selectList(new QueryWrapper<>());
@@ -201,6 +197,7 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             }
         }
     }
+
 
 
 }

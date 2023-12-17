@@ -1,8 +1,6 @@
-package com.lhc.newV.system.controller;
+package com.lhc.newV.system.mvc.controller;
 
-import com.lhc.newV.system.mapper.DataBaseInfoMapper;
-import com.lhc.newV.system.mapper.SelectMapper;
-import com.lhc.newV.system.service.TableService;
+import com.lhc.newV.system.mvc.mapper.CommonSelectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SelectConll {
 
-    private final SelectMapper selectMapper;
+    private final CommonSelectMapper selectMapper;
 
     @GetMapping
     public List<Map<String, String>> getList(String type,String param1) {

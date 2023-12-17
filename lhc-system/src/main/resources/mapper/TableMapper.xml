@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.lhc.newV.system.mapper.TableMapper">
-    <select id="findList" resultType="com.lhc.newV.system.entity.vo.TableColumnVO" parameterType="java.util.Set">
+<mapper namespace="com.lhc.newV.system.mvc.mapper.TableMapper">
+    <select id="findList" resultType="com.lhc.newV.system.mvc.entity.vo.TableColumnVO" parameterType="java.util.Set">
         SELECT
             a.id tableId,
             a.NAME tableName,
@@ -18,8 +18,8 @@
             b.foreign_key_id,
             b.foreign_table_id
         FROM
-        `n_table` a
-        JOIN n_column b ON a.id = b.table_id
+        `db_table` a
+        JOIN db_column b ON a.id = b.table_id
         <where>
             <if test="tableIds!=null and tableIds.size > 0">
                 and b.table_id in <foreach collection="tableIds" item="item" open="(" separator="," close=")">'${item}'</foreach>
@@ -31,7 +31,7 @@
         SELECT
             table_id tableId, foreign_table_id foreignTableId
         FROM
-            n_column
+            db_column
         WHERE
             foreign_table_id is not null
             and (foreign_table_id = #{tableId}  or table_id = #{tableId})

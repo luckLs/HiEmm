@@ -1,4 +1,4 @@
-package com.lhc.newV.system.entity.vo;
+package com.lhc.newV.system.mvc.entity.vo;
 
 /**
  * 表之间的关联

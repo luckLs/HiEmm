@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 
-@MapperScan("com.lhc.*.*.mapper")
+@MapperScan("com.lhc.*.*.*.mapper")
 @ServletComponentScan("com.lhc.newV.framework.web.filter.SqlInjectFilter")
 @SpringBootApplication
 public class NewVApplication {

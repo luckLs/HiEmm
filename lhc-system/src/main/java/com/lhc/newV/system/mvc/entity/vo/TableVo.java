@@ -1,6 +1,6 @@
-package com.lhc.newV.system.entity.vo;
+package com.lhc.newV.system.mvc.entity.vo;
 
-import com.lhc.newV.system.entity.Column;
+import com.lhc.newV.system.mvc.entity.Column;
 import lombok.Data;
 
 import java.util.List;

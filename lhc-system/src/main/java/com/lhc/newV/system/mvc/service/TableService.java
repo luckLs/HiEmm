@@ -1,8 +1,8 @@
-package com.lhc.newV.system.service;
+package com.lhc.newV.system.mvc.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import com.lhc.newV.system.entity.Table;
+import com.lhc.newV.system.mvc.entity.Table;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

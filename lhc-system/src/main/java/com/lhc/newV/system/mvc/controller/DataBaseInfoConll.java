@@ -1,12 +1,10 @@
-package com.lhc.newV.system.controller;
+package com.lhc.newV.system.mvc.controller;
 
 
-import com.lhc.newV.system.entity.DataBaseInfo;
-import com.lhc.newV.system.mapper.DataBaseInfoMapper;
-import com.lhc.newV.system.service.TableService;
-import jakarta.annotation.Resource;
+import com.lhc.newV.system.mvc.entity.DataBaseInfo;
+import com.lhc.newV.system.mvc.mapper.DataBaseInfoMapper;
+import com.lhc.newV.system.mvc.service.TableService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
