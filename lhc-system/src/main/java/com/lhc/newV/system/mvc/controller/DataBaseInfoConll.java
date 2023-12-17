@@ -26,9 +26,9 @@ public class DataBaseInfoConll {
     /**
      * 同步数据库
      **/
-    @PostMapping("/sync/{id}")
-    public void openSyncDataBaseInfo(@PathVariable Integer id) {
-        tableService.openSyncDataBaseInfo(id);
+    @PostMapping("/syncData")
+    public void openSyncDataBaseInfo(@RequestBody DataBaseInfo info) {
+        tableService.openSyncDataBaseInfo(info.getId());
     }
 
     /**

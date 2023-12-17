@@ -16,10 +16,15 @@ public class DBConnectForeignTablesUtil {
 
 
     public static void setForeignTable(DataBaseInfo dataBaseInfo, List<Column> columnList, Map<String, Object[]> tablePrimaryKeyMap) {
-        switch (dataBaseInfo.getSetFkRule()) {
-            case _ID -> x_id(columnList, tablePrimaryKeyMap);
-            case ID -> xid(columnList, tablePrimaryKeyMap);
-            default -> x_id(columnList, tablePrimaryKeyMap);
+        String setFkRule = dataBaseInfo.getSetFkRule();
+        if (null == setFkRule) {
+            x_id(columnList, tablePrimaryKeyMap);
+        } else {
+            switch (dataBaseInfo.getSetFkRule()) {
+                case _ID -> x_id(columnList, tablePrimaryKeyMap);
+                case ID -> xid(columnList, tablePrimaryKeyMap);
+                default -> x_id(columnList, tablePrimaryKeyMap);
+            }
         }
     }
 

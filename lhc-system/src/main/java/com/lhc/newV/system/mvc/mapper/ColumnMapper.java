@@ -22,7 +22,7 @@ public interface ColumnMapper extends BaseMapper<Column> {
      * 根据字段名称查找
      * @return Boolean
      */
-    @Select("SELECT * FROM db_column WHERE database_info_id = #{databaseInfoId} AND name = #{name} limit 1")
+    @Select("SELECT * FROM db_column WHERE table_id = #{databaseInfoId} AND name = #{name} limit 1")
     Column getColumnByName(@Param("databaseInfoId") Integer tableId, @Param("name") String name);
 
     /**
@@ -31,7 +31,12 @@ public interface ColumnMapper extends BaseMapper<Column> {
     @Update("update db_column set foreign_key_id = #{foreignKeyId},foreign_table_id=#{foreignTableId} where id = #{id}")
     void updateRelationshipLine(@Param("id") Integer id, @Param("foreignKeyId") Integer foreignKeyId, @Param("foreignTableId") Integer foreignTableId);
 
-    @Delete("DELETE FROM db_column WHERE table_id IN (#{tableIds})")
+    @Delete("<script>" +
+                "DELETE FROM db_column WHERE table_id in" +
+                "<foreach item='item' index='index' collection='tableIds' open='(' separator=',' close=')'>" +
+                "#{item}" +
+                "</foreach>" +
+            "</script>")
     void delteColumnByTableIds(@Param("tableIds") List<Integer> tableIds);
 
 }
