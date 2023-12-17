@@ -1,10 +1,12 @@
 package com.lhc.newV.system.mvc.service.impl;
-
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.alibaba.druid.support.json.JSONUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.lhc.newV.db.MetaData;
@@ -28,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 import com.lhc.newV.system.common.util.dbUtil.DBConnectForeignTablesUtil;
 
 /**
@@ -38,8 +42,8 @@ import com.lhc.newV.system.common.util.dbUtil.DBConnectForeignTablesUtil;
 public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements TableService {
 
     private final DBContext dbConfig;
-    private final ColumnMapper columnMapper;
     private final TableMapper tableMapper;
+    private final ColumnMapper columnMapper;
     private final DataBaseInfoMapper dataBaseInfoMapper;
 
     @Override
@@ -107,50 +111,87 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         // 根据数据库type类型，获取数据库表信息
         MetaData metaData = dbConfig.PLUGIN_MAP.get(dataBaseInfo.getType()).getMetaData();
         List<MyTable> myTableList = metaData.getTables(dataBaseInfo.getJdbcUrl(), dataBaseInfo.getUserName(), dataBaseInfo.getPassword());
-
         // 处理表和字段信息
         List<Column> columnList = new ArrayList<>();
-        List<String> primaryKeyList = new ArrayList<>();
-        // 主键tablePrimaryKeyMap--> K-表名:v-[表id 主键id]
+        // 主键tablePrimaryKeyMap--> K-表名:v-[表id 主键id],后续用来处理主外键关系
         Map<String, Object[]> tablePrimaryKeyMap = new HashMap<>(100);
+
+        // 查询原来的表
+        List<Table> oldTableList = tableMapper.selectList(Wrappers.lambdaQuery(Table.class)
+                .eq(Table::getDatabaseInfoId, dataBaseInfo.getId()).select(Table::getId, Table::getName));
+        // 需要删除的表
+        Map<String, Integer> deleteTableMap = new HashMap<>(100);
+        if(CollUtil.isNotEmpty(oldTableList)){
+            deleteTableMap = oldTableList.stream().collect(Collectors.toMap(Table::getName, Table::getId));
+        }
 
         for (MyTable myTable : myTableList) {
             // 保存表信息
-            Table table = new Table();
-            table.setName(myTable.name);
+            Table table = tableMapper.getTableByName(dataBaseInfo.getId(), myTable.name);
+            if (null == table) {
+                table = new Table();
+                table.setDatabaseInfoId(dataBaseInfo.getId());
+                table.setName(myTable.name);
+                table.setAlias(MD5Utli.get_7(myTable.name));
+            }
             table.setDescription(myTable.description);
-            table.setDatabaseInfoId(dataBaseInfo.getId());
-            table.setAlias(MD5Utli.get_7(myTable.name));
-            this.save(table);
+            this.saveOrUpdate(table);
 
-            // 遍历表中的字段信息
+            // 集合中移除存在的字段，保留删除的字段
+            deleteTableMap.remove(myTable.name);
+
+            // 查询原来的字段
+            List<Column> oldColumnList = columnMapper.selectList(Wrappers.lambdaQuery(Column.class)
+                    .eq(Column::getTableId, table.getId()).select(Column::getId, Column::getName));
+            // 需要删除的字段
+            Map<String, Integer> deleteColumnMap = new HashMap<>(16);
+            if(CollUtil.isNotEmpty(oldColumnList)){
+                deleteColumnMap = oldColumnList.stream().collect(Collectors.toMap(Column::getName, Column::getId));
+            }
+
+            //保存字段，遍历表中的字段信息
             for (MyColumn myColumn : myTable.columnList) {
-                // 保存字段信息
-                Column column = new Column();
+                Column column = columnMapper.getColumnByName(table.getId(),myColumn.field);
+                if(null == column){
+                    column = new Column();
+                    column.setAlias(MD5Utli.get_7(myColumn.field));
+                }
                 column.setDatabaseInfoId(dataBaseInfo.getId());
                 column.setTableId(table.getId());
                 column.setName(myColumn.field);
                 column.setDataType(myColumn.type);
                 column.setIsPrimaryKey(myColumn.isKey);
                 column.setDescription(myColumn.comment);
-                column.setAlias(MD5Utli.get_7(myColumn.field));
-                Db.save(column);
-
+                Db.saveOrUpdate(column);
                 columnList.add(column);
-                // 处理主键
+                // 处理主键，把主键放入map
                 if (myColumn.isKey) {
-                    primaryKeyList.add(myColumn.field);
                     tablePrimaryKeyMap.put(table.getName(), new Object[]{table.getId(), column.getId()});
                 }
+
+                // 集合中移除存在的字段，保留删除的字段
+                deleteColumnMap.remove(column.getName());
             }
+
+            // 删除字段
+            if(CollUtil.isNotEmpty(deleteColumnMap)){
+                List<Integer> delteIds = new ArrayList<>(deleteColumnMap.values());
+                columnMapper.deleteBatchIds(delteIds);
+            }
+
         }
 
-        // 处理外键关系
+        // 删除表 , 和关联的字段
+        if(CollUtil.isNotEmpty(deleteTableMap)){
+            List<Integer> delteIds = new ArrayList<>(deleteTableMap.values());
+            tableMapper.deleteBatchIds(delteIds);
+            columnMapper.delteColumnByTableIds(delteIds);
+        }
+
+        // 处理columnList中字段的外键关系
         DBConnectForeignTablesUtil.setForeignTable(dataBaseInfo, columnList, tablePrimaryKeyMap);
         Db.updateBatchById(columnList);
-
     }
-
 
 
     public void a() {
@@ -197,7 +238,6 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             }
         }
     }
-
 
 
 }

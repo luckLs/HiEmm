@@ -24,8 +24,12 @@ public interface TableMapper extends BaseMapper<Table> {
     /**
      * 根据表id，查找所有关系表
      **/
-    List<JSONObject> findForeignTablesByTableId(@Param("tableId") Integer tableIds);
+    List<JSONObject> findForeignTablesByTableId(@Param("tableId") Integer tableId);
 
-    @Select("SELECT COUNT(1) > 0 FROM db_table WHERE database_info_id = #{databaseInfoId} AND name = #{name}")
-    boolean getIsTable(@Param("databaseInfoId") String databaseInfoId, @Param("name") String name);
+    /**
+     * 根据表名查找表
+     * @return Boolean
+     */
+    @Select("SELECT * FROM db_table WHERE database_info_id = #{databaseInfoId} AND name = #{name} limit 1")
+    Table getTableByName(@Param("databaseInfoId") Integer databaseInfoId, @Param("name") String name);
 }
