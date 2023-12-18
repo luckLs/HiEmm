@@ -9,7 +9,7 @@ import com.lhc.newV.db.Plugin;
 public class CustomPlugin implements Plugin {
     @Override
     public String getDbType() {
-        return "mySql";
+        return "MySQL";
     }
 
     @Override

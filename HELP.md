@@ -9,3 +9,6 @@ Hi项目的后端，根据数据库，自动生成ER图。帮助编码人员理�
 * SpringBoot 3.+
 * 
 
+### 项目运行
+* 先执行[hi.sql](hi.sql)
+* 然后在 db_data_base_info 表中添加数据连接信息 数据库类型支持{ MySQL、SqlServer }
