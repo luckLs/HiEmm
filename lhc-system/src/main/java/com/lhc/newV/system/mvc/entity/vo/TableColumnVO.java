@@ -76,12 +76,8 @@ public class TableColumnVO {
     /**
      * 外键_表id
      */
-    private String foreignTableId;
+    private Integer foreignTableId;
 
-    /**
-     * 外键_表name
-     */
-    private String foreignKeyName;
 
     private HashSet<Integer> tableIds;
 }

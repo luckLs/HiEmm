@@ -38,4 +38,14 @@ public class ErColumnVO {
      */
     public String columnAlias;
 
+    /**
+     * 外键_表id
+     */
+    public Integer foreignTableId;
+
+    /**
+     * 外键_字段name
+     */
+    public String foreignKeyName;
+
 }

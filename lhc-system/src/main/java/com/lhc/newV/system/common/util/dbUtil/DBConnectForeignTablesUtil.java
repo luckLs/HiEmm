@@ -3,6 +3,7 @@ package com.lhc.newV.system.common.util.dbUtil;
 import com.lhc.newV.system.mvc.entity.Column;
 import com.lhc.newV.system.mvc.entity.DataBaseInfo;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,17 +47,32 @@ public class DBConnectForeignTablesUtil {
      * 处理对应的外键
      */
     private static void setfkid(List<Column> columnList, Map<String, Object[]> tablePrimaryKeyMap, String id) {
+        Map<String, Object[]> tempMap = new HashMap<>(tablePrimaryKeyMap.size());
+        // 再处理一下表名 比如：db_user_info 只取user_info作为key
+        tablePrimaryKeyMap.forEach((key, value) -> {
+            int index = key.indexOf("_");
+            if (index > 0) {
+                String substring = key.substring(index + 1);
+                if (!tablePrimaryKeyMap.containsKey(substring)) {
+                    tempMap.put(key.substring(index + 1), value);
+                }
+            }
+        });
+        tablePrimaryKeyMap.putAll(tempMap);
+
+
         columnList.forEach(column -> {
-            // 判断外键命名规则（表名id）的模式
-            if (column.getName().endsWith(id)) {
-                // 获得表名，如果有对应表则设置，该字段的外键表关系
-                String foreignKeyTable = column.getName().substring(0, column.getName().length() - 3);
-                if (null != tablePrimaryKeyMap.get(foreignKeyTable)) {
-                    column.setForeignTableId((int) tablePrimaryKeyMap.get(foreignKeyTable)[0]);
-                    column.setForeignKeyId((int) tablePrimaryKeyMap.get(foreignKeyTable)[1]);
+            // 判断外键字段命名规则（表名id）的模式
+            String columnName = column.getName();
+            if (columnName.endsWith(id)) {
+                // 截取方式，获得表名，如果有对应表则设置，该字段的外键表关系
+                String foreignKeyTable = columnName.substring(0, columnName.length() - 3);
+                Object[] table = tablePrimaryKeyMap.get(foreignKeyTable);
+                if (null != table) {
+                    column.setForeignTableId((int) table[0]);
+                    column.setForeignKeyId((int) table[1]);
                 }
             }
         });
     }
-
 }

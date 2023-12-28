@@ -1,11 +1,11 @@
 package com.lhc.newV.system.mvc.service.impl;
+
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.alibaba.druid.support.json.JSONUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
@@ -14,6 +14,7 @@ import com.lhc.newV.db.model.MyColumn;
 import com.lhc.newV.db.model.MyTable;
 import com.lhc.newV.db.sql.DBContext;
 import com.lhc.newV.framework.db.mysql.utli.MD5Utli;
+import com.lhc.newV.system.common.util.dbUtil.Layout.ERDiagram;
 import com.lhc.newV.system.mvc.entity.Column;
 import com.lhc.newV.system.mvc.entity.DataBaseInfo;
 import com.lhc.newV.system.mvc.entity.Table;
@@ -47,12 +48,12 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
     private final DataBaseInfoMapper dataBaseInfoMapper;
 
     @Override
-    public Map<String, List<?>> getEr(Integer tableId, String otherTableIdIds) {
+    public Map<String, List<?>> getEr(Integer tableId, String otherTableIdIds, Integer relationLevel) {
         // 根据表id，查找所有关系表
         Set<Integer> tableIds = new HashSet<>();
 
         if (null != tableId) {
-            tableIds = this.findForeignTablesByTableId(tableId);
+            tableIds = this.findForeignTablesByTableId(tableId, relationLevel);
         }
 
 
@@ -65,8 +66,11 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         Map<String, ErTableVO> erTableMap = new HashMap<>(100);
         List<ErTableVO> erTableVOList = new ArrayList<>();
         List<ErRelationVO> erRelationVOList = new ArrayList<>();
-
         List<TableColumnVO> tableColumnVOList = tableMapper.findList(tableIds);
+
+        ERDiagram erDiagram = new ERDiagram();
+
+        Map<Integer, TableColumnVO> tableColumnMap = tableColumnVOList.stream().collect(Collectors.toMap(TableColumnVO::getColumnId, v -> v, (v1, v2) -> v1));
         for (TableColumnVO tableColumnVO : tableColumnVOList) {
             String tableName = tableColumnVO.getTableName();
             ErTableVO erTableVO = erTableMap.getOrDefault(tableName, new ErTableVO());
@@ -88,15 +92,47 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             erColumnVO.type = tableColumnVO.getDataType();
             erColumnVO.isPrimaryKey = tableColumnVO.getIsPrimaryKey();
             erColumnVO.columnAlias = tableColumnVO.getColumnAlias();
-            erTableVO.ports.add(erColumnVO);
+            // 处理外键
             if (tableColumnVO.getForeignKeyId() != null) {
-                ErRelationVO erRelation = new ErRelationVO();
-                erRelation.id = tableColumnVO.getTableId() + "_" + tableColumnVO.getColumnId();
-                erRelation.staNode = tableColumnVO.getForeignKeyId();
-                erRelation.endNode = tableColumnVO.getColumnId();
-                erRelationVOList.add(erRelation);
+                erColumnVO.foreignTableId = tableColumnVO.getForeignTableId();
+
+                if (tableColumnMap.get(tableColumnVO.getForeignKeyId()) != null) {
+                    erColumnVO.foreignKeyName = tableColumnMap.get(tableColumnVO.getForeignKeyId()).getColumnName();
+                    ErRelationVO erRelation = new ErRelationVO();
+                    erRelation.id = tableColumnVO.getTableId() + "_" + tableColumnVO.getColumnId();
+                    erRelation.staNode = tableColumnVO.getForeignKeyId();
+                    erRelation.endNode = tableColumnVO.getColumnId();
+                    erRelationVOList.add(erRelation);
+                }
+
+                // String tableName1 = tableColumnMap.get(tableColumnVO.getForeignKeyId()).getTableName();
+//                System.out.println("ALTER TABLE " + erTableVO.label + " ADD CONSTRAINT fkx_"+erTableVO.label+ RandomUtil.randomInt() +" " +
+//                        "FOREIGN KEY ("+erColumnVO.name+") REFERENCES "+tableName1+" ("+erColumnVO.foreignKeyName+");");
             }
+
+            erTableVO.ports.add(erColumnVO);
         }
+
+
+        // 设置xy轴
+        List<Table> table_xys = new ArrayList<>();
+        erTableVOList.forEach(table -> erDiagram.addTable(table.id.toString(), table.ports.size()));
+        erTableVOList.forEach(table -> {
+            table.ports.forEach(port->{
+                if(null != port.foreignTableId){
+                    erDiagram.addRelationship(table.id.toString(), port.foreignTableId.toString());
+                }
+            });
+        });
+        erDiagram.treeLayout();
+        Map<String, double[]> coordinates = erDiagram.getTableCoordinates();
+        erTableVOList.forEach(table -> {
+            double[] coords = coordinates.get(table.id.toString());
+            table.positionX = (int) coords[0];
+            table.positionY = (int) coords[1];
+        });
+
+
         Map<String, List<?>> returnList = new HashMap<>(2);
         returnList.put("table", erTableVOList);
         returnList.put("relation", erRelationVOList);
@@ -115,13 +151,15 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         List<Column> columnList = new ArrayList<>();
         // 主键tablePrimaryKeyMap--> K-表名:v-[表id 主键id],后续用来处理主外键关系
         Map<String, Object[]> tablePrimaryKeyMap = new HashMap<>(100);
+        // 表有多少个字段
+        Map<Integer, Integer> tableColumnSizeMap = new HashMap<>(100);
 
         // 查询原来的表
         List<Table> oldTableList = tableMapper.selectList(Wrappers.lambdaQuery(Table.class)
                 .eq(Table::getDatabaseInfoId, dataBaseInfo.getId()).select(Table::getId, Table::getName));
         // 需要删除的表
         Map<String, Integer> deleteTableMap = new HashMap<>(100);
-        if(CollUtil.isNotEmpty(oldTableList)){
+        if (CollUtil.isNotEmpty(oldTableList)) {
             deleteTableMap = oldTableList.stream().collect(Collectors.toMap(Table::getName, Table::getId));
         }
 
@@ -145,14 +183,14 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
                     .eq(Column::getTableId, table.getId()).select(Column::getId, Column::getName));
             // 需要删除的字段
             Map<String, Integer> deleteColumnMap = new HashMap<>(16);
-            if(CollUtil.isNotEmpty(oldColumnList)){
+            if (CollUtil.isNotEmpty(oldColumnList)) {
                 deleteColumnMap = oldColumnList.stream().collect(Collectors.toMap(Column::getName, Column::getId));
             }
 
             //保存字段，遍历表中的字段信息
             for (MyColumn myColumn : myTable.columnList) {
-                Column column = columnMapper.getColumnByName(table.getId(),myColumn.field);
-                if(null == column){
+                Column column = columnMapper.getColumnByName(table.getId(), myColumn.field);
+                if (null == column) {
                     column = new Column();
                     column.setAlias(MD5Utli.get_7(myColumn.field));
                 }
@@ -174,15 +212,18 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
             }
 
             // 删除字段
-            if(CollUtil.isNotEmpty(deleteColumnMap)){
+            if (CollUtil.isNotEmpty(deleteColumnMap)) {
                 List<Integer> delteIds = new ArrayList<>(deleteColumnMap.values());
                 columnMapper.deleteBatchIds(delteIds);
             }
 
+            // 记录表有多少个字段
+            tableColumnSizeMap.put(table.getId(), CollUtil.isEmpty(myTable.getColumnList()) ? 0 : myTable.getColumnList().size());
+
         }
 
         // 删除表 , 和关联的字段
-        if(CollUtil.isNotEmpty(deleteTableMap)){
+        if (CollUtil.isNotEmpty(deleteTableMap)) {
             List<Integer> delteIds = new ArrayList<>(deleteTableMap.values());
             tableMapper.deleteBatchIds(delteIds);
             columnMapper.delteColumnByTableIds(delteIds);
@@ -218,23 +259,29 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
     /**
      * 根据表id，查找所有关系表
      **/
-    public Set<Integer> findForeignTablesByTableId(int tableId) {
+    public Set<Integer> findForeignTablesByTableId(int tableId, Integer relationLevel) {
+        if (relationLevel == null) {
+            relationLevel = 3;
+        }
         Set<Integer> visited = new HashSet<>();
-        findForeignTablesRecursively(tableId, visited);
+        findForeignTablesRecursively(tableId, visited, relationLevel);
         return visited;
     }
 
     /**
      * 递归查找表的关系表
      **/
-    private void findForeignTablesRecursively(int currentTableId, Set<Integer> visited) {
+    private void findForeignTablesRecursively(int currentTableId, Set<Integer> visited, int relationLevel) {
+        if (relationLevel <= 0) {
+            return;
+        }
         if (!visited.contains(currentTableId)) {
             visited.add(currentTableId);
             // 查询当前表的关系表
             List<JSONObject> foreignTables = tableMapper.findForeignTablesByTableId(currentTableId);
             for (JSONObject foreignTable : foreignTables) {
-                findForeignTablesRecursively(foreignTable.getInt("tableId"), visited);
-                findForeignTablesRecursively(foreignTable.getInt("foreignTableId"), visited);
+                findForeignTablesRecursively(foreignTable.getInt("tableId"), visited, relationLevel - 1);
+                findForeignTablesRecursively(foreignTable.getInt("foreignTableId"), visited, relationLevel - 1);
             }
         }
     }

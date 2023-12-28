@@ -15,12 +15,14 @@ import java.util.Map;
 public interface TableService extends IService<Table> {
 
     /**
-     *  ER图
-     * @param tableId 表id
+     * ER图
+     *
+     * @param tableId         表id
      * @param otherTableIdIds 其它表id
+     * @param relationLevel   查询出关系层级数
      * @return Er图
      */
-    Map<String,List<?>> getEr(Integer tableId,String otherTableIdIds);
+    Map<String,List<?>> getEr(Integer tableId, String otherTableIdIds, Integer relationLevel);
 
     /**
      * 同步数据库

@@ -25,14 +25,16 @@ public class TableConll {
 
 
     /**
-     *  ER图
-     * @param tableId 表id
+     * ER图
+     *
+     * @param tableId         表id
      * @param otherTableIdIds 其他表id
+     * @param relationLevel   查询出关系层级数
      * @return Er图
      */
     @GetMapping("er")
-    public Map<String, List<?>> getEr(Integer tableId,String otherTableIdIds) {
-        return tableService.getEr(tableId,otherTableIdIds);
+    public Map<String, List<?>> getEr(Integer tableId, String otherTableIdIds,Integer relationLevel) {
+        return tableService.getEr(tableId, otherTableIdIds,relationLevel);
     }
 
     @GetMapping("list")
@@ -48,6 +50,7 @@ public class TableConll {
 
     /**
      * 更新主外键关系
+     *
      * @param column 字段
      */
     @PostMapping("/updateRelationshipLine")
