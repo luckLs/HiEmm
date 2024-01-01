@@ -132,8 +132,7 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         List<Column> columnList = new ArrayList<>();
         // 主键tablePrimaryKeyMap--> K-表名:v-[表id 主键id],后续用来处理主外键关系
         Map<String, Object[]> tablePrimaryKeyMap = new HashMap<>(100);
-        // 表有多少个字段
-        Map<Integer, Integer> tableColumnSizeMap = new HashMap<>(100);
+
 
         // 查询原来的表
         List<Table> oldTableList = tableMapper.selectList(Wrappers.lambdaQuery(Table.class)
@@ -198,9 +197,6 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
                 columnMapper.deleteBatchIds(delteIds);
             }
 
-            // 记录表有多少个字段
-            tableColumnSizeMap.put(table.getId(), CollUtil.isEmpty(myTable.getColumnList()) ? 0 : myTable.getColumnList().size());
-
         }
 
         // 删除表 , 和关联的字段
@@ -213,28 +209,6 @@ public class TableServiceImpl extends ServiceImpl<TableMapper, Table> implements
         // 处理columnList中字段的外键关系
         DBConnectForeignTablesUtil.setForeignTable(dataBaseInfo, columnList, tablePrimaryKeyMap);
         Db.updateBatchById(columnList);
-    }
-
-
-    public void a() {
-        List<Table> tables = tableMapper.selectList(new QueryWrapper<>());
-        Map tabMap = new HashMap<>();
-        tables.forEach(tab -> {
-            List<Map> colMap = new ArrayList<>();
-            tabMap.put(tab.getAlias() + "表", colMap);
-            List<Column> columns = columnMapper.selectList(new LambdaQueryWrapper<Column>().eq(Column::getTableId, tab.getId()));
-            columns.forEach(col -> {
-                Map map = new HashMap<>();
-                colMap.add(map);
-                if (null == col.getForeignKeyId()) {
-                    map.put(col.getIsPrimaryKey() ? "主键" : "普通字段", col.getAlias());
-                } else {
-                    Table tableByForeignKeyId = tableMapper.getTableByForeignKeyId(col.getForeignKeyId());
-                    map.put("外键", col.getAlias() + ",指向的是" + tableByForeignKeyId.getAlias() + "表的主键]");
-                }
-            });
-        });
-        System.out.println(JSONUtils.toJSONString(tabMap));
     }
 
     /**

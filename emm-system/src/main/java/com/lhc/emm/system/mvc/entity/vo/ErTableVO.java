@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * 表的er图
+ * @author luck
  */
 public class ErTableVO {
 
