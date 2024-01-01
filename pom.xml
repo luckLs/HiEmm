@@ -3,15 +3,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
-    <artifactId>newV</artifactId>
+    <artifactId>HiEmm</artifactId>
     <version>${revision}</version>
-    <name>newV</name>
+    <name>emm</name>
     <description>项目</description>
 
     <modules>
-        <module>lhc-system</module>
-        <module>lhc-framework</module>
-        <module>lhc-spi</module>
+        <module>emm-system</module>
+        <module>emm-framework</module>
+        <module>emm-spi</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -53,7 +53,7 @@
             </dependency>
             <dependency>
                 <groupId>com.example</groupId>
-                <artifactId>lhc-spi</artifactId>
+                <artifactId>emm-spi</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -154,7 +154,7 @@
 <!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
 <!--                <version>${spring-boot.version}</version>-->
 <!--                <configuration>-->
-<!--                    <mainClass>import com.lhc.newV.NewVApplication</mainClass>-->
+<!--                    <mainClass>import com.lhc.emm.emmApplication</mainClass>-->
 <!--                    <skip>true</skip>-->
 <!--                </configuration>-->
 <!--                <executions>-->
