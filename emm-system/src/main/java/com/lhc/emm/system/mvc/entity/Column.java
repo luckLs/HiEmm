@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * @author luck
+ * @author lhc
  * 表表示数据表中的列
  */
 @Data

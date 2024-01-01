@@ -8,7 +8,7 @@ import java.util.Map;
 
 
 /**
- * @author luck
+ * @author lhc
  * 通用的下拉选择
  */
 public interface CommonSelectMapper {

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author luck
+ * @author lhc
  * 数据库连接外键表的工具类
  */
 public class DBConnectForeignTablesUtil {

@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * 表表示数据表中的列 Mapper 接口
  *
- * @author luck
+ * @author lhc
  */
 public interface ColumnMapper extends BaseMapper<Column> {
 

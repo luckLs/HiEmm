@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author luck
+ * @author lhc
  */
 @Service
 public interface TableService extends IService<Table> {

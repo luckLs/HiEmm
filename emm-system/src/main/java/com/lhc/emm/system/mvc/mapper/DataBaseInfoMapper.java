@@ -7,7 +7,7 @@ import com.lhc.emm.system.mvc.entity.DataBaseInfo;
 /**
  * 库信息
  *
- * @author luck
+ * @author lhc
  */
 public interface DataBaseInfoMapper extends BaseMapper<DataBaseInfo> {
 }
