@@ -18,6 +18,7 @@
         <module>common-spring-boot-starter</module>
         <module>db-spring-boot-starter</module>
         <module>emm-db-mysql</module>
+        <module>emm-db-sqlserver</module>
     </modules>
 
 </project>

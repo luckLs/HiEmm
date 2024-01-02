@@ -23,3 +23,5 @@ bin-release/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/emm-framework/emm-db-sqlserver/target/
+target/

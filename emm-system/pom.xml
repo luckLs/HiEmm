@@ -32,8 +32,12 @@
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>emm-db-mysql</artifactId>
-            <version>1.0.0</version>
-            <scope>compile</scope>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>emm-db-sqlserver</artifactId>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
